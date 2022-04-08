@@ -4,6 +4,6 @@ public class Cube
 {
     public Cube()
     {
-        Test.TestString += "Cube";
+        ScriptManager.StringBuilder.AppendLine("Cube");
     }
 }

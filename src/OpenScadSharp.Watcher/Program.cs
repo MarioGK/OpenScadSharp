@@ -1,50 +1,34 @@
 ﻿using System.Diagnostics;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
+using OpenScadSharp.Watcher;
 
 var stopWatch = new Stopwatch();
 var scriptOptions = ScriptOptions.Default
-    .WithReferences(typeof(OpenScadSharp.Test).Assembly)
+    .WithReferences(typeof(OpenScadSharp.ScriptManager).Assembly)
     .WithImports("OpenScadSharp");
 
-var scriptPath = @"F:\Projects\OpenScadSharp\src\OpenScadSharp.Example\Program.cs";
+var scriptPath = @"B:\Projects\OpenScadSharp\src\OpenScadSharp.Example\Program.cs";
 
-var watcher = new FileSystemWatcher(Path.GetDirectoryName(scriptPath)!)
+var fileWatcher = new FileWatcher(scriptPath);
+
+fileWatcher.FileChanged += RunScript;
+
+fileWatcher.Watch();
+
+Console.ReadLine();
+
+async void RunScript(string scriptContent)
 {
-    Filter = "Program.cs",
-    NotifyFilter = NotifyFilters.LastWrite
-};
-
-var scriptReader = new StreamReader(scriptPath, new FileStreamOptions
-{
-    Access = FileAccess.Read,
-    Mode = FileMode.Open,
-    Share = FileShare.ReadWrite
-});
-
-watcher.Changed += async (_, eventArgs) =>
-{
-    watcher.EnableRaisingEvents = false;
-    stopWatch.Start();
-    
-    scriptReader.BaseStream.Position = 0;
-
-    var scriptContent = scriptReader.ReadToEnd();
+    stopWatch!.Start();
     
     Console.WriteLine(scriptContent);
     var script = CSharpScript.Create(scriptContent, scriptOptions);
     var state = await script.RunAsync();
-    var result = await state.ContinueWithAsync<string>("Test.TestString");
+    var result = await state.ContinueWithAsync<string>("ScriptManager.ScriptToText()");
     
-    stopWatch.Stop();
+    stopWatch!.Stop();
     
     Console.WriteLine(result.ReturnValue);
     Console.WriteLine("Elapsed time: {0}MS", stopWatch.ElapsedMilliseconds);
-    watcher.EnableRaisingEvents = true;
-};
-
-watcher.EnableRaisingEvents = true;
-
-Console.ReadLine();
-
-//scriptReader.Dispose();
+}

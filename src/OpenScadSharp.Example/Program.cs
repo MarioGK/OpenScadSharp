@@ -1,4 +1,6 @@
-﻿var cub = new Cube();
+﻿using OpenScadSharp.Objects;
+
+var cub = new Cube();
 var cub2 = new Cube();
 var cub3 = new Cube();
 var cub4 = new Cube();
